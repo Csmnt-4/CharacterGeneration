@@ -1,8 +1,9 @@
 # This is a Python script to create a Pathfinder-style character sheet.
+
 import random
-import tkinter as tk
+import tkinter as tk  # pip install tkinter
 from tkinter import ttk
-import namemaker
+import namemaker  # pip install namemaker
 
 
 class Hero:
@@ -50,21 +51,53 @@ def choose_random_class():
     new_hero.align = ''
     alignment_label_selected.config(text='')
     update_alignment_chart_availability()
-    pass
 
 
-def save_data():
-    # Add logic to save data
-    pass
-
-
-def print_data():
+def update_hero_stats():
     new_hero.stren = int(strength_box.get())
     new_hero.dextr = int(dexterity_box.get())
     new_hero.const = int(constitution_box.get())
     new_hero.intel = int(intelligence_box.get())
     new_hero.wisdm = int(wisdom_box.get())
     new_hero.charm = int(strength_box.get())
+
+    new_hero.fort = int(new_hero.stren + new_hero.const / 2)
+    new_hero.refl = int(new_hero.dextr + new_hero.wisdm / 2)
+    new_hero.will = int(new_hero.intel + new_hero.charm / 2)
+
+
+def save_data():
+    update_hero_stats()
+
+    with open("hero" + new_hero.name + ".txt", "w") as file:
+        file.write(f"{new_hero.name} {new_hero.surname}\n")
+        file.write(f"Class: {new_hero.cclass}\n")
+        file.write(f"Alignment: {new_hero.align}\n\n")
+
+        file.write(f"Size: {calculate_size()}\n")
+        file.write(f"Speed: {calculate_speed()}\n")
+        file.write(f"Wealth: {new_hero.wealt}\n\n")
+
+        file.write(f"Str: {new_hero.stren} ( "
+                   + ("" if int(new_hero.stren) - 10 < 0 else "+") + f"{int(int(new_hero.stren) - 10 / 2)})\n")
+        file.write(f"Dex: {new_hero.dextr} ( "
+                   + ("" if int(new_hero.dextr) - 10 < 0 else "+") + f"{int(int(new_hero.dextr) - 10 / 2)})\n")
+        file.write(f"Con: {new_hero.const} ( "
+                   + ("" if int(new_hero.const) - 10 < 0 else "+") + f"{int(int(new_hero.const) - 10 / 2)})\n")
+        file.write(f"Int: {new_hero.intel} ( "
+                   + ("" if int(new_hero.intel) - 10 < 0 else "+") + f"{int(int(new_hero.intel) - 10 / 2)})\n")
+        file.write(f"Wis: {new_hero.wisdm} ( "
+                   + ("" if int(new_hero.wisdm) - 10 < 0 else "+") + f"{int(int(new_hero.wisdm) - 10 / 2)})\n")
+        file.write(f"Cha: {new_hero.charm} ( "
+                   + ("" if int(new_hero.charm) - 10 < 0 else "+") + f"{int(int(new_hero.charm) - 10 / 2)})\n\n")
+
+        file.write(f"Fortitude: {new_hero.fort}\n")
+        file.write(f"Reflexes: {new_hero.refl}\n")
+        file.write(f"Willpower: {new_hero.will}")
+
+
+def print_data():
+    update_hero_stats()
 
     print(new_hero.name + " " + new_hero.surname)
     print("class:" + new_hero.cclass)
@@ -77,19 +110,54 @@ def print_data():
     print("wis:" + str(new_hero.wisdm))
     print("cha:" + str(new_hero.charm))
 
-    print("fort:" + str((new_hero.stren + new_hero.const) / 2))
-    print("refl:" + str((new_hero.dextr + new_hero.wisdm) / 2))
-    print("will:" + str((new_hero.intel + new_hero.charm) / 2))
+    print("fort:" + str(new_hero.fort))
+    print("refl:" + str(new_hero.refl))
+    print("will:" + str(new_hero.will))
 
 
 def set_alignment(event):
     clicked_button = event.widget
-    for i in range(9):
-        if alignment_button_dict[i] == clicked_button:
-            if alignment_button_states[i]:
-                # print(f"Clicked button name: {alignment_button_dict[clicked_button]}")
+    for iterator in range(9):
+        if alignment_button_dict[iterator] == clicked_button:
+            if alignment_button_states[iterator]:
                 alignment_label_selected.config(text=alignment_button_dict[clicked_button])
                 new_hero.align = alignment_button_dict[clicked_button]
+
+
+def calculate_size():
+    size = ''
+    if constitution_box.get().isdigit() & strength_box.get().isdigit() & dexterity_box.get().isdigit():
+        size = "Average (for the race)"
+        if ((int(strength_box.get()) / 2 + int(constitution_box.get())) / 2) > 10 & int(dexterity_box.get()) < 16:
+            size = "Big (for your race)"
+        else:
+            if int(dexterity_box.get()) > 15:
+                size = "Small (for your race)"
+    return size
+
+
+def calculate_speed():
+    speed = ''
+    if constitution_box.get().isdigit() & dexterity_box.get().isdigit():
+        speed = "+0 feet/turn"
+        if ((int(dexterity_box.get()) + int(constitution_box.get()) / 2) / 2) > 10:
+            speed = "+5 feet/turn"
+        else:
+            if int(dexterity_box.get()) < 8:
+                speed = "-5 feet/turn"
+    return speed
+
+
+def set_labels_calculated():
+    size_label.config(text="Size: " + calculate_size())
+    speed_label.config(text="Speed (bonus): " + calculate_speed())
+    if strength_box.get().isdigit() & constitution_box.get().isdigit():
+        fortitude_label.config(
+            text="Fortitude: " + str(int((int(strength_box.get()) + int(constitution_box.get())) / 2) - 1))
+    if dexterity_box.get().isdigit() & wisdom_box.get().isdigit():
+        reflex_label.config(text="Reflex: " + str(int((int(dexterity_box.get()) + int(wisdom_box.get())) / 2) - 1))
+    if intelligence_box.get().isdigit() & charisma_box.get().isdigit():
+        will_label.config(text="Will: " + str(int((int(intelligence_box.get()) + int(charisma_box.get())) / 2) - 1))
 
 
 def update_alignment_chart_availability():
@@ -145,7 +213,6 @@ def class_dropdown_choice(*args):
     new_hero.cclass = class_dropdown.get()
     alignment_label_selected.config(text='')
     update_alignment_chart_availability()
-    # print(str(new_hero.cclass))
 
 
 def update_dropdowns(*args):
@@ -156,8 +223,26 @@ def update_dropdowns(*args):
                        wisdom_box.get(),
                        charisma_box.get()]
 
-    for combo in stat_boxes:
-        combo['values'] = [value for value in stat_values if value not in selected_values]
+    # Track the count of selected values
+    selected_counts = {value: selected_values.count(value) for value in selected_values}
+
+    # Create a new list to store the result
+    unselected_values = []
+
+    # Iterate through the original list
+    for value in stat_values:
+        # If the value is selected and has not been removed all times
+        if value in selected_counts and selected_counts[value] > 0:
+            # Remove it once and decrement the count
+            selected_counts[value] -= 1
+        else:
+            # Add the value to the result list
+            unselected_values.append(value)
+
+    for combo_box in stat_boxes:
+        combo_box['values'] = unselected_values
+
+    set_labels_calculated()
 
 
 def roll_dice():
@@ -172,6 +257,13 @@ def roll_dice():
         largest_n_rolls = sorted(rolls, reverse=True)[:n]
         total = sum(largest_n_rolls)
         stat_values.append(str(total))
+
+    strength_box.set('')
+    dexterity_box.set('')
+    constitution_box.set('')
+    intelligence_box.set('')
+    wisdom_box.set('')
+    charisma_box.set('')
 
 
 # Press the green button in the gutter to run the script.
@@ -246,10 +338,9 @@ if __name__ == '__main__':
     attribute_labels = [tk.Label(root, text=attr) for attr in attributes]
     for i, combo_var in enumerate(
             [strength_box, dexterity_box, constitution_box, intelligence_box, wisdom_box, charisma_box]):
-        combo = ttk.Combobox(root, textvariable=combo_var, values=stat_values)
+        combo = ttk.Combobox(root, textvariable=combo_var, values=stat_values, postcommand=update_dropdowns)
         combo.grid(row=i, column=0)
         stat_boxes.append(combo)
-        combo_var.trace("w", update_dropdowns)  # Call update_dropdowns when combo_var changes
 
     size_label = tk.Label(root, text="Size:")
     speed_label = tk.Label(root, text="Speed:")

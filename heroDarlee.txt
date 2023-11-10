@@ -1,0 +1,18 @@
+Darlee Lucada
+Class: Paladin
+Alignment: Lawful Good
+
+Size: Average (for the race)
+Speed: +0 feet/turn
+Wealth: 194
+
+Str: 10
+dex: 10
+con: 13
+int: 12
+wis: 10
+cha: 10
+
+Fortitude: 16
+Reflexes: 15
+Willpower: 17
